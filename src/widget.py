@@ -8,6 +8,7 @@ def mask_account_card(data: str) -> str:
         # Маскируем номер счёта
         number = data.split()[-1]
         masked_number = get_mask_account(number)
+
         return f"Счет {masked_number}"
     else:
         # Маскируем номер карты
@@ -17,3 +18,9 @@ def mask_account_card(data: str) -> str:
         masked_number = get_mask_card_number(number)
 
         return f"{name} {masked_number}"
+
+
+def get_date(date: str) -> str:
+    """возвращает строку с датой в формате ДД.ММ.ГГГГ"""
+
+    return f"{date[8:10]}.{date[5:7]}.{date[:4]}"
