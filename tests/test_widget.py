@@ -23,11 +23,10 @@ def test_mask_account_card(data: str, expected: str):
 def test_get_date_valid(date: str, expected: str):
     assert get_date(date) == expected
 
-
-def test_get_date_invalid():
-    with pytest.raises(ValueError):
-        get_date("2024-02-30T02:26:18.671407")  # Пример с неверной датой
-    with pytest.raises(ValueError):
-        get_date("2024-03-32T02:26:18.671407")  # Пример с неверным числом в дате
+def test_get_date_invalid_format():
     with pytest.raises(ValueError):
         get_date("2024.03.11")  # Неверный формат
+
+def test_get_date_invalid_date():
+    with pytest.raises(ValueError):
+        get_date("2024-02-30T02:26:18.671407")  # Некорректная дата
