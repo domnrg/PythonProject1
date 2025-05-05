@@ -17,3 +17,12 @@ def transaction_descriptions(transactions: list):
     for transaction in transactions:
         if "description" in transaction:
             yield transaction["description"]
+
+
+def card_number_generator(start: int, end: int):
+    """Генератор, который выдает номера банковских карт в формате XXXX XXXX XXXX XXXX."""
+    for number in range(start, end + 1):
+        # Преобразуем число в строку длиной 16 символов, дополняя нулями слева
+        formatted = f"{number:016d}"
+        # Разбиваем строку на группы по 4 цифры
+        yield f"{formatted[:4]} {formatted[4:8]} {formatted[8:12]} {formatted[12:]}"
