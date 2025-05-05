@@ -1,4 +1,6 @@
-from src.generators import filter_by_currency
+from types import GeneratorType
+
+from src.generators import filter_by_currency, transaction_descriptions
 
 def test_filter_by_currency_usd(sample_transactions):
     result = list(filter_by_currency(sample_transactions, "USD"))
@@ -36,3 +38,19 @@ def test_filter_by_currency_stop_iteration(sample_transactions):
     next(gen)  # второй
     with pytest.raises(StopIteration):
         next(gen)  # должен завершиться
+
+
+def test_transaction_descriptions_output(transactions_with_descriptions):
+    result = list(transaction_descriptions(transactions_with_descriptions))
+    assert result == [
+        "Перевод организации",
+        "Перевод со счета на счет",
+        "Перевод с карты на карту",
+        "Оплата услуг"
+    ]
+
+def test_transaction_descriptions_iterator(transactions_with_descriptions):
+    gen = transaction_descriptions(transactions_with_descriptions)
+    assert next(gen) == "Перевод организации"
+    assert next(gen) == "Перевод со счета на счет"
+    assert isinstance(gen, GeneratorType)  # Проверка, что это генератор

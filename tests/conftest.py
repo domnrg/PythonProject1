@@ -80,3 +80,13 @@ def sample_transactions():
         }
     ]
 
+
+@pytest.fixture
+def transactions_with_descriptions():
+    return [
+        {"id": 1, "description": "Перевод организации"},
+        {"id": 2, "description": "Перевод со счета на счет"},
+        {"id": 3, "description": "Перевод с карты на карту"},
+        {"id": 4},  # нет description
+        {"id": 5, "description": "Оплата услуг"}
+    ]
