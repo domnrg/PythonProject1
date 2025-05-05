@@ -14,3 +14,69 @@ def operations_data():
         {"id": 999999999, "state": "EXECUTED", "date": "2018-10-14T08:21:33.419441"},  # одинаковая дата
         {"id": 888888888, "state": "EXECUTED", "date": "неправильная_дата"}  # некорректная дата
     ]
+
+
+@pytest.fixture
+def sample_transactions():
+    """Тестовые данные для функции filter_by_currency"""
+    return [
+        {
+            "id": 1,
+            "operationAmount": {
+                "amount": "1000.00",
+                "currency": {
+                    "name": "USD",
+                    "code": "USD"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "operationAmount": {
+                "amount": "2000.00",
+                "currency": {
+                    "name": "EUR",
+                    "code": "EUR"
+                }
+            }
+        },
+        {
+            "id": 3,
+            "operationAmount": {
+                "amount": "3000.00",
+                "currency": {
+                    "name": "USD",
+                    "code": "USD"
+                }
+            }
+        },
+        {
+            "id": 4,
+            "operationAmount": {
+                "amount": "4000.00",
+                "currency": {
+                    "name": "RUB",
+                    "code": "RUB"
+                }
+            }
+        },
+        {
+            "id": 5,
+            # отсутствует ключ "operationAmount"
+        },
+        {
+            "id": 6,
+            "operationAmount": {
+                # отсутствует "currency"
+            }
+        },
+        {
+            "id": 7,
+            "operationAmount": {
+                "currency": {
+                    # отсутствует "code"
+                }
+            }
+        }
+    ]
+
