@@ -1,4 +1,5 @@
 import pytest
+
 from src.processing import filter_by_state, sort_by_date
 
 
@@ -52,11 +53,13 @@ def test_sort_by_date_descending(operations_data):
     dates = [item["date"] for item in result if item["date"].startswith("20")]
     assert dates == sorted(dates, reverse=True)  # Проверяем убывание
 
+
 def test_sort_by_date_ascending(operations_data):
     """Тест сортировки по возрастанию дат"""
     result = sort_by_date(operations_data, descending=False)
     dates = [item["date"] for item in result if item["date"].startswith("20")]
     assert dates == sorted(dates)  # Проверяем возрастание
+
 
 def test_sort_by_date_same_dates(operations_data):
     """Тест на обработку одинаковых дат"""
@@ -64,6 +67,7 @@ def test_sort_by_date_same_dates(operations_data):
     # Оба элемента с одинаковой датой должны остаться в правильном порядке (порядок сортировки стабильный)
     ids_with_same_date = [item["id"] for item in sorted_items if item["date"] == "2018-10-14T08:21:33.419441"]
     assert set(ids_with_same_date) == {615064591, 999999999}
+
 
 def test_sort_by_date_invalid_format(operations_data):
     """Тест: элемент с некорректной датой не должен вызвать ошибку сортировки"""
