@@ -59,4 +59,3 @@ def test_error_file_log(tmp_path):
     assert content.count("error_func error: RuntimeError") == 2
     assert content.count("(123,)") == 2
     assert content.count("{}") == 2
-
