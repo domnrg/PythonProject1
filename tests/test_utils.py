@@ -1,6 +1,6 @@
 import json
-from unittest.mock import mock_open, patch
-from src.utils import transactions_list
+from unittest.mock import patch, Mock, mock_open
+from src.utils import transactions_list, get_transaction_amount
 
 
 @patch("os.path.exists", return_value=True)
@@ -35,3 +35,31 @@ def test_transactions_list_empty_file(mock_file, mock_exists):
     """Проверка, если JSON-файл пустой"""
     result = transactions_list("empty.json")
     assert result == []
+
+
+def test_get_transaction_amount_rub():
+    """Если валюта RUB — возвращается сумма без конвертации"""
+    transaction = {"operationAmount": {"amount": "1000.00", "currency": {"code": "RUB"}}}
+    result = get_transaction_amount(transaction)
+    assert result == 1000.0
+
+
+@patch("src.utils.requests.get")
+def test_get_transaction_amount_foreign(mock_get):
+    """Проверка конвертации валюты через API"""
+    mock_response = Mock()
+    mock_response.json.return_value = {"result": 9500.0}
+    mock_response.raise_for_status.return_value = None
+    mock_get.return_value = mock_response
+
+    transaction = {"operationAmount": {"amount": "100.00", "currency": {"code": "USD"}}}
+
+    result = get_transaction_amount(transaction)
+    assert result == 9500.0
+    mock_get.assert_called_once()
+
+
+def test_get_transaction_amount_missing_data():
+    """Неверная структура транзакции"""
+    assert get_transaction_amount({}) == 0.0
+    assert get_transaction_amount({"operationAmount": {}}) == 0.0
