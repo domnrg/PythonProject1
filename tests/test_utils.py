@@ -1,6 +1,7 @@
 import json
-from unittest.mock import patch, Mock, mock_open
-from src.utils import transactions_list, get_transaction_amount
+from unittest.mock import Mock, mock_open, patch
+
+from src.utils import get_transaction_amount, transactions_list
 
 
 @patch("os.path.exists", return_value=True)

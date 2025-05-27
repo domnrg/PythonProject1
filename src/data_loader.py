@@ -1,5 +1,6 @@
-import pandas as pd
 import os
+
+import pandas as pd
 
 
 def load_transactions_from_csv(file_path: str) -> list[dict]:

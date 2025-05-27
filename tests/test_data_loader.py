@@ -1,5 +1,7 @@
-import pandas as pd
 from unittest.mock import patch
+
+import pandas as pd
+
 from src.data_loader import load_transactions_from_csv, load_transactions_from_excel
 
 mock_df = pd.DataFrame([{
