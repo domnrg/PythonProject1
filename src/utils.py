@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import re
+from typing import List, Dict
 
 import requests
 from dotenv import load_dotenv
@@ -77,3 +79,21 @@ def get_transaction_amount(transaction: dict) -> float:
     except (requests.RequestException, KeyError, ValueError) as e:
         logger.error(f"Ошибка конвертации валюты: {e}")
         return 0.0
+
+
+def search_transactions_by_description(transactions: List[Dict], keyword: str) -> List[Dict]:
+    """Возвращает транзакции, в описании которых содержится заданное слово."""
+    pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+    return [tx for tx in transactions if pattern.search(tx.get("description", ""))]
+
+
+def count_transactions_by_category(transactions: List[Dict], categories: List[str]) -> Dict[str, int]:
+    """Считает количество транзакций по категориям."""
+    category_count = {category: 0 for category in categories}
+    for tx in transactions:
+        description = tx.get("description", "").strip().lower()
+        for category in categories:
+            if category.lower() in description:
+                category_count[category] += 1
+    return category_count
+
