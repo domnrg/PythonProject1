@@ -41,6 +41,8 @@ pytest
 - filter_by_currency - Генератор, возвращающий только операции с указанной валютой
 - transaction_descriptions - Генератор, поочередно возвращающий описание каждой транзакции
 - card_number_generator - Генератор номеров банковских карт в формате XXXX XXXX XXXX XXXX
+- load_transactions_from_csv - Загружает транзакции из CSV-файла
+- load_transactions_from_excel - Загружает транзакции из Excel-файла
 
 декораторы:
 

@@ -1,7 +1,8 @@
-import os
 import json
-import requests
 import logging
+import os
+
+import requests
 from dotenv import load_dotenv
 
 # Создание папки logs, если нет
