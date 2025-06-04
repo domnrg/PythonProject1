@@ -2,12 +2,12 @@ import json
 import logging
 import os
 import re
-from typing import List, Dict
+from collections import Counter
+from typing import Dict, List
 
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-from collections import Counter
 
 # Создание папки logs, если нет
 os.makedirs("logs", exist_ok=True)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 file_handler = logging.FileHandler("logs/utils.log", mode="w", encoding="utf-8")
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s")
 file_handler.setFormatter(formatter)
 
 # Избегаем дублирования хендлеров
@@ -92,13 +92,13 @@ def search_transactions_by_description(transactions: List[Dict], keyword: str) -
     return [tx for tx in transactions if pattern.search(tx.get("description", ""))]
 
 
-def count_transactions_by_category(transactions: list[dict], categories: list[str]) -> dict:
-    """Возвращает количество операций в каждой категории из переданного списка."""
-    counter = Counter()
-    for tx in transactions:
-        description = tx.get("description", "")
-        if description in categories:
-            counter[description] += 1
+def count_transactions_by_category(transactions: list[dict], categories: list[str] = None) -> dict:
+    """Функция для подсчета количества банковских операций определенного типа"""
+    descriptions = [t.get("description", "").lower() for t in transactions]
+    counter = Counter(descriptions)
+
+    if categories:
+        return {cat: counter.get(cat.lower(), 0) for cat in categories}
     return dict(counter)
 
 

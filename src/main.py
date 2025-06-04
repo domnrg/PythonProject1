@@ -1,14 +1,7 @@
-import os
 import pandas as pd
 
 from src.data_loader import load_transactions_from_csv, load_transactions_from_excel
-from src.utils import (
-    search_transactions_by_description,
-    count_transactions_by_category,
-    transactions_list,
-    get_transaction_amount,
-    ask_yes_no
-)
+from src.utils import ask_yes_no, get_transaction_amount, search_transactions_by_description, transactions_list
 
 
 def main():
@@ -34,10 +27,12 @@ def main():
         )
 
         df["currency_code"] = df["operationAmount"].apply(
-            lambda x: x["currency"]["code"] if isinstance(x, dict) and "currency" in x and isinstance(x["currency"],
-                                                                                                      dict) else None
+            lambda x: (
+                x["currency"]["code"]
+                if isinstance(x, dict) and "currency" in x and isinstance(x["currency"], dict)
+                else None
+            )
         )
-
 
     elif choice == "2":
         file_path = input("Введите путь к CSV-файлу: ")
@@ -69,7 +64,11 @@ def main():
     # Фильтрация по статусу
     available_statuses = ["EXECUTED", "CANCELED", "PENDING"]
     while True:
-        status = input("Введите статус, по которому необходимо выполнить фильтрацию (EXECUTED, CANCELED, PENDING): ").strip().upper()
+        status = (
+            input("Введите статус, по которому необходимо выполнить фильтрацию (EXECUTED, CANCELED, PENDING): ")
+            .strip()
+            .upper()
+        )
         if status in available_statuses:
             break
         print(f'Статус "{status}" недоступен. Повторите ввод.')
@@ -127,4 +126,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
