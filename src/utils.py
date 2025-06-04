@@ -4,6 +4,7 @@ import os
 import re
 from typing import List, Dict
 
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 
@@ -52,20 +53,25 @@ def transactions_list(input_file):
     return []
 
 
-def get_transaction_amount(transaction: dict) -> float:
-    """Возвращает сумму транзакции в рублях."""
-    amount_str = transaction.get("operationAmount", {}).get("amount")
-    currency_code = transaction.get("operationAmount", {}).get("currency", {}).get("code")
-
-    if not amount_str or not currency_code:
-        logger.warning("Отсутствуют данные о сумме или валюте")
+def get_transaction_amount(row: pd.Series) -> float:
+    """Возвращает сумму транзакции в рублях для строки DataFrame."""
+    try:
+        amount_str = row["operationAmount"]["amount"]
+        currency_code = row["operationAmount"]["currency"]["code"]
+    except (KeyError, TypeError):
+        logger.warning("Ошибка при извлечении суммы или валюты")
         return 0.0
 
-    amount = float(amount_str)
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        logger.error(f"Невозможно преобразовать сумму: {amount_str}")
+        return 0.0
 
     if currency_code == "RUB":
         return amount
 
+    # Конвертация через API
     params = {"from": currency_code, "to": "RUB", "amount": amount}
     headers = {"apikey": API_KEY}
 
@@ -73,9 +79,7 @@ def get_transaction_amount(transaction: dict) -> float:
         response = requests.get(BASE_URL, params=params, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
-        result = float(data["result"])
-        logger.debug(f"Конвертировано {amount} {currency_code} в {result} RUB")
-        return result
+        return float(data["result"])
     except (requests.RequestException, KeyError, ValueError) as e:
         logger.error(f"Ошибка конвертации валюты: {e}")
         return 0.0
@@ -97,3 +101,13 @@ def count_transactions_by_category(transactions: List[Dict], categories: List[st
                 category_count[category] += 1
     return category_count
 
+
+def ask_yes_no(prompt: str) -> bool:
+    """Спрашивает у пользователя 'да' или 'нет' и возвращает True/False"""
+    while True:
+        answer = input(prompt).strip().lower()
+        if answer in ("да", "д", "yes", "y"):
+            return True
+        elif answer in ("нет", "н", "no", "n"):
+            return False
+        print("Пожалуйста, введите 'да' или 'нет'.")
