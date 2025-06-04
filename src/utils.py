@@ -7,6 +7,7 @@ from typing import List, Dict
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+from collections import Counter
 
 # Создание папки logs, если нет
 os.makedirs("logs", exist_ok=True)
@@ -91,15 +92,14 @@ def search_transactions_by_description(transactions: List[Dict], keyword: str) -
     return [tx for tx in transactions if pattern.search(tx.get("description", ""))]
 
 
-def count_transactions_by_category(transactions: List[Dict], categories: List[str]) -> Dict[str, int]:
-    """Считает количество транзакций по категориям."""
-    category_count = {category: 0 for category in categories}
+def count_transactions_by_category(transactions: list[dict], categories: list[str]) -> dict:
+    """Возвращает количество операций в каждой категории из переданного списка."""
+    counter = Counter()
     for tx in transactions:
-        description = tx.get("description", "").strip().lower()
-        for category in categories:
-            if category.lower() in description:
-                category_count[category] += 1
-    return category_count
+        description = tx.get("description", "")
+        if description in categories:
+            counter[description] += 1
+    return dict(counter)
 
 
 def ask_yes_no(prompt: str) -> bool:
