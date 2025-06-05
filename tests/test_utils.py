@@ -3,8 +3,12 @@ from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
-from src.utils import (count_transactions_by_category, get_transaction_amount, search_transactions_by_description,
-                       transactions_list)
+from src.utils import (
+    count_transactions_by_category,
+    get_transaction_amount,
+    search_transactions_by_description,
+    transactions_list,
+)
 
 
 @patch("os.path.exists", return_value=True)

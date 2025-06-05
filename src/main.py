@@ -5,6 +5,11 @@ from src.utils import ask_yes_no, get_transaction_amount, search_transactions_by
 
 
 def main():
+    """
+    Основная функция программы.
+    Отвечает за взаимодействие с пользователем: загрузку данных из файлов, фильтрацию по статусу,
+    валюте, описанию, сортировку и вывод результата в консоль.
+    """
     print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.")
     print("Выберите необходимый пункт меню:")
     print("1. Получить информацию о транзакциях из JSON-файла")
@@ -14,18 +19,17 @@ def main():
     choice = input("Ваш выбор: ").strip()
 
     if choice == "1":
-        file_path = input("Введите путь к JSON-файлу: ")
+        print("Для обработки выбран JSON-файл.")
+        file_path = "data/operations.json"
         data = transactions_list(file_path)
         if not data:
             print("Не удалось загрузить данные из JSON-файла.")
             return
         df = pd.DataFrame(data)
 
-        # Обрабатываем вложенные поля ТОЛЬКО для JSON
         df["amount"] = df["operationAmount"].apply(
             lambda x: float(x["amount"]) if isinstance(x, dict) and "amount" in x else float(x)
         )
-
         df["currency_code"] = df["operationAmount"].apply(
             lambda x: (
                 x["currency"]["code"]
@@ -35,7 +39,8 @@ def main():
         )
 
     elif choice == "2":
-        file_path = input("Введите путь к CSV-файлу: ")
+        print("Для обработки выбран CSV-файл.")
+        file_path = "data/transactions.csv"
         try:
             df = load_transactions_from_csv(file_path)
             df.columns = df.columns.str.strip()
@@ -44,7 +49,8 @@ def main():
             return
 
     elif choice == "3":
-        file_path = input("Введите путь к XLSX-файлу: ")
+        print("Для обработки выбран XLSX-файл.")
+        file_path = "data/transactions_excel.xlsx"
         try:
             df = load_transactions_from_excel(file_path)
             df.columns = df.columns.str.strip()
@@ -56,12 +62,10 @@ def main():
         print("Некорректный выбор. Завершение программы.")
         return
 
-    # Проверка наличия данных
     if df.empty:
         print("Файл пуст или не содержит данных.")
         return
 
-    # Фильтрация по статусу
     available_statuses = ["EXECUTED", "CANCELED", "PENDING"]
     while True:
         status = (
@@ -79,12 +83,10 @@ def main():
         print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации.")
         return
 
-    # Конвертация валют
     df["amount_rub"] = df.apply(get_transaction_amount, axis=1)
 
     print(f'Операции отфильтрованы по статусу "{status}"')
 
-    # Сортировка
     if ask_yes_no("Отсортировать операции по дате? Да/Нет: "):
         while True:
             order = input("Отсортировать по возрастанию или по убыванию? ").strip().lower()
@@ -95,18 +97,15 @@ def main():
         ascending = order == "по возрастанию"
         df = df.sort_values(by="date", ascending=ascending)
 
-    # Фильтрация по валюте
     if ask_yes_no("Выводить только рублевые транзакции? Да/Нет: "):
         df = df[df["currency_code"].str.upper() == "RUB"]
 
-    # Поиск по описанию
     if ask_yes_no("Отфильтровать список транзакций по определенному слову в описании? Да/Нет: "):
         word = input("Введите слово для поиска в описании: ").strip()
         transactions = search_transactions_by_description(df.to_dict(orient="records"), word)
     else:
         transactions = df.to_dict(orient="records")
 
-    # Вывод
     if not transactions:
         print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации.")
     else:
