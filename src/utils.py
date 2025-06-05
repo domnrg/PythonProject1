@@ -1,7 +1,11 @@
 import json
 import logging
 import os
+import re
+from collections import Counter
+from typing import Dict, List
 
+import pandas as pd
 import requests
 from dotenv import load_dotenv
 
@@ -13,7 +17,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 file_handler = logging.FileHandler("logs/utils.log", mode="w", encoding="utf-8")
-formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+formatter = logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s")
 file_handler.setFormatter(formatter)
 
 # Избегаем дублирования хендлеров
@@ -50,20 +54,25 @@ def transactions_list(input_file):
     return []
 
 
-def get_transaction_amount(transaction: dict) -> float:
-    """Возвращает сумму транзакции в рублях."""
-    amount_str = transaction.get("operationAmount", {}).get("amount")
-    currency_code = transaction.get("operationAmount", {}).get("currency", {}).get("code")
-
-    if not amount_str or not currency_code:
-        logger.warning("Отсутствуют данные о сумме или валюте")
+def get_transaction_amount(row: pd.Series) -> float:
+    """Возвращает сумму транзакции в рублях для строки DataFrame."""
+    try:
+        amount_str = row["operationAmount"]["amount"]
+        currency_code = row["operationAmount"]["currency"]["code"]
+    except (KeyError, TypeError):
+        logger.warning("Ошибка при извлечении суммы или валюты")
         return 0.0
 
-    amount = float(amount_str)
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        logger.error(f"Невозможно преобразовать сумму: {amount_str}")
+        return 0.0
 
     if currency_code == "RUB":
         return amount
 
+    # Конвертация через API
     params = {"from": currency_code, "to": "RUB", "amount": amount}
     headers = {"apikey": API_KEY}
 
@@ -71,9 +80,34 @@ def get_transaction_amount(transaction: dict) -> float:
         response = requests.get(BASE_URL, params=params, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
-        result = float(data["result"])
-        logger.debug(f"Конвертировано {amount} {currency_code} в {result} RUB")
-        return result
+        return float(data["result"])
     except (requests.RequestException, KeyError, ValueError) as e:
         logger.error(f"Ошибка конвертации валюты: {e}")
         return 0.0
+
+
+def search_transactions_by_description(transactions: List[Dict], keyword: str) -> List[Dict]:
+    """Возвращает транзакции, в описании которых содержится заданное слово."""
+    pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+    return [tx for tx in transactions if pattern.search(tx.get("description", ""))]
+
+
+def count_transactions_by_category(transactions: list[dict], categories: list[str] = None) -> dict:
+    """Функция для подсчета количества банковских операций определенного типа"""
+    descriptions = [t.get("description", "").lower() for t in transactions]
+    counter = Counter(descriptions)
+
+    if categories:
+        return {cat: counter.get(cat.lower(), 0) for cat in categories}
+    return dict(counter)
+
+
+def ask_yes_no(prompt: str) -> bool:
+    """Спрашивает у пользователя 'да' или 'нет' и возвращает True/False"""
+    while True:
+        answer = input(prompt).strip().lower()
+        if answer in ("да", "д", "yes", "y"):
+            return True
+        elif answer in ("нет", "н", "no", "n"):
+            return False
+        print("Пожалуйста, введите 'да' или 'нет'.")
